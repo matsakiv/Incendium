@@ -1,0 +1,31 @@
+name: Publish on NuGet
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish:
+    name: Build and publish packages
+    runs-on: ubuntu-latest
+    environment:
+      name: nuget
+      url: https://github.com
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT }}
+
+      - name: Build and publish Incendium.Result if version changed
+        uses: alirezanet/publish-nuget@v3.0.3
+        with:
+          PROJECT_FILE_PATH: Incendium.Result/Incendium.Result.csproj
+          PACKAGE_NAME: Incendium.Result
+          NUGET_KEY: ${{ secrets.NUGET_KEY }}
+
+      - name: Build and publish Incendium.RetryPolicy if version changed
+        uses: alirezanet/publish-nuget@v3.0.3
+        with:
+          PROJECT_FILE_PATH: Incendium.RetryPolicy/Incendium.RetryPolicy.csproj
+          PACKAGE_NAME: Incendium.RetryPolicy
+          NUGET_KEY: ${{ secrets.NUGET_KEY }}
