@@ -1,20 +1,12 @@
 # Incendium
 [![License: MIT](https://img.shields.io/github/license/matsakiv/incendium)](https://opensource.org/licenses/MIT)
 
-Incendium.Result
-
-![NuGet Version](https://img.shields.io/nuget/v/Incendium.Result)![NuGet Downloads](https://img.shields.io/nuget/dt/Incendium.Result)
-
-Incendium.RetryPolicy
-
-![NuGet Version](https://img.shields.io/nuget/v/Incendium.RetryPolicy)![NuGet Downloads](https://img.shields.io/nuget/dt/Incendium.RetryPolicy)
-
 Incendium is a small set of useful cross-platform .NET standard 2.1 libraries for .NET developers.
 
-| Package | Description |
-| --------- | ----------- |
-| Incendium.Result | Contains `Error`, `Result<T>` and `NullableResult<T>` types which allows to return a success value or an error (something vaguely similar to the Rust style) |
-| Incendium.RetryPolicy | Provides `RetryHttpClientHandler` to easily retry HTTP requests in case of errors, as well as `RateGate` to control rate limiting |
+| Package | Description | Nuget |
+| --------- | ----------- | ----- |
+| [Incendium.Result](https://github.com/matsakiv/Incendium/tree/main/Incendium.Result) | Contains `Error`, `Result<T>` and `NullableResult<T>` types which allows to return a success value or an error | ![NuGet Version](https://img.shields.io/nuget/v/Incendium.Result) ![NuGet Downloads](https://img.shields.io/nuget/dt/Incendium.Result) |
+| [Incendium.RetryPolicy](https://github.com/matsakiv/Incendium/tree/main/Incendium.RetryPolicy) | Contains `RetryHttpClientHandler` to easily retry HTTP requests in case of errors, as well as `RateGate` to control rate limiting | ![NuGet Version](https://img.shields.io/nuget/v/Incendium.RetryPolicy) ![NuGet Downloads](https://img.shields.io/nuget/dt/Incendium.RetryPolicy) |
 
 ## Getting started
 
@@ -24,9 +16,9 @@ Incendium is a small set of useful cross-platform .NET standard 2.1 libraries fo
 
 `PM> Install-Package Incendium.RetryPolicy`
 
-### Result and NullableResult
+### Result`<T>` and NullableResult`<T>`
 
-The method can be synchronous or asynchronous and can return a value without explicitly creating a `Result<T>` type:
+[More docs](https://github.com/matsakiv/Incendium/tree/main/Incendium.Result). If you need to return either a not-null value or an error from a method, you can use the `Result<T>` type:
 
 ```cs
 public async Result<string> GetStringAsync() {
@@ -59,13 +51,13 @@ if (error != null) {
 ```
 ### RetryHttpClientHandler
 
-Сan be used as a handler for `HttpClient` and allows you to easily (compared to Polly) set up repeated requests in the following cases:
+[More docs](https://github.com/matsakiv/Incendium/tree/main/Incendium.RetryPolicy). Сan be used as a handler for `HttpClient` and allows you to easily set up repeated requests with constant or exponential delays in the following cases:
 * `HttpNetworkException`
 * Server errors (`5xx`)
 * Request timeout error (`408`)
 * Too many requests (`429`)
 
-and also allows you to configure rate limiting with exponential delays for outgoing requests using `RateGate`:
+and also allows you to configure rate limiting using `RateGate`:
 
 ```cs
 var innerHttpClientHandler = new HttpClientHandler(); // can be easily mocked
@@ -80,19 +72,3 @@ var retryHttpClientHandler = new RetryHttpClientHandler(innerHttpClientHandler)
 }
 var httpClient = new HttpClient(retryHttpClientHandler);
 ```
-
-There are several ready-made delay algorithms that can be used:
-* Constant
-* Exponential
-* DecorrelatedJitterBackoffV2 (default)
-
-```cs
-var retryHttpClientHandler = new RetryHttpClientHandler(innerHttpClientHandler)
-{
-    RetryDelaysFactory = () => Delays.Exponential(
-        firstDelay: TimeSpan.FromMilliseconds(100),
-        count: 10)
-}
-```
-
-You can also pass your own delay algorithm in the `RetryDelaysFactory` property, which should return `IEnumerable<TimeSpan>`.

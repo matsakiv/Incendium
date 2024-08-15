@@ -7,6 +7,36 @@ namespace Incendium.Result
         private record TestObject(int IntField, string? StringField);
 
         [Fact]
+        public void Test_Result_FailCreateFromNullSuccessValue()
+        {
+            // asserts
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var result = new Result<TestObject>((TestObject)null!);
+            });
+
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                Result<TestObject> result = (TestObject)null!;
+            });
+        }
+
+        [Fact]
+        public void Test_Result_FailCreateFromNullErrorValue()
+        {
+            // asserts
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var result = new Result<TestObject>((Error?)null);
+            });
+
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                Result<TestObject> result = (Error?)null;
+            });
+        }
+
+        [Fact]
         public void Test_Result_DeconstructWhenSuccess()
         {
             // act
@@ -35,10 +65,39 @@ namespace Incendium.Result
         }
 
         [Fact]
+        public void Test_NullableResult_CreateFromNullSuccessValue()
+        {
+            // act
+            var result1 = new NullableResult<TestObject>((TestObject)null!);
+            NullableResult<TestObject> result2 = (TestObject)null!;
+
+            // asserts
+            Assert.Null(result1.Value);
+            Assert.Null(result1.Error);
+            Assert.Null(result2.Value);
+            Assert.Null(result2.Error);
+        }
+
+        [Fact]
+        public void Test_NullableResult_FailCreateFromNullErrorValue()
+        {
+            // asserts
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var result = new NullableResult<TestObject>((Error?)null);
+            });
+
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                NullableResult<TestObject> result = (Error?)null;
+            });
+        }
+
+        [Fact]
         public void Test_NullableResult_DeconstructWhenSuccess()
         {
             // act
-            var (result, error) = GetNullableResult(withError: false);
+            var (result, error) = GetNullableResult(withError: false, returnNull: false);
 
             // asserts
             Assert.Equal(12, result!.IntField);
@@ -51,7 +110,7 @@ namespace Incendium.Result
         public void Test_NullableResult_DeconstructWhenError()
         {
             // act
-            var (result, error) = GetNullableResult(withError: true);
+            var (result, error) = GetNullableResult(withError: true, returnNull: false);
 
             // asserts
             Assert.Null(result);
@@ -70,10 +129,13 @@ namespace Incendium.Result
             return new TestObject(12, "Test");
         }
 
-        private static NullableResult<TestObject> GetNullableResult(bool withError)
+        private static NullableResult<TestObject> GetNullableResult(bool withError, bool returnNull)
         {
             if (withError)
                 return new Error(code: 100, message: "Error");
+
+            if (returnNull)
+                return (TestObject?)null;
 
             return new TestObject(12, "Test");
         }
