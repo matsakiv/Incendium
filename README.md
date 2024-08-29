@@ -45,8 +45,8 @@ if (error != null) {
     log.LogError(
         error.Exception(),
         "Error with code {@code} and message {@message}",
-        error.Code(),
-        error.Message());
+        error.Code,
+        error.Message);
 }
 ```
 ### RetryHttpClientHandler
