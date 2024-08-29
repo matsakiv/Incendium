@@ -74,6 +74,17 @@ namespace Incendium
         }
 
         /// <summary>
+        /// Initialize a new instance of the error with a specified error code, message and exception
+        /// </summary>
+        /// <param name="code">Error code</param>
+        /// <param name="message">Error message</param>
+        /// <param name="exception">Inner exception</param>
+        public Error(int code, string message, Exception? exception)
+            : this(code, message, exception, innerError: null)
+        {
+        }
+
+        /// <summary>
         /// Initialize a new instance of the error with a specified error message and inner exception
         /// </summary>
         /// <param name="message">Error message</param>
