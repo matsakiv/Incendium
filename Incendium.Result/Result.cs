@@ -37,17 +37,6 @@ namespace Incendium
         public Result(Error error)
         {
             Value = default!;
-            Error = error;
-        }
-
-        /// <summary>
-        /// Initialize a result instance from the non-null error value with nullable type
-        /// </summary>
-        /// <param name="error">Non-null error value with nullable type</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public Result(Error? error)
-        {
-            Value = default!;
             Error = error ?? throw new ArgumentNullException(nameof(error));
         }
 
@@ -62,13 +51,6 @@ namespace Incendium
         /// </summary>
         /// <param name="error">Error</param>
         public static implicit operator Result<T>(Error error) => new(error);
-        /// <summary>
-        /// Initialize a result instance from the non-null error value with nullable type
-        /// </summary>
-        /// <param name="error">Non-null error value with nullable type</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static implicit operator Result<T>(Error? error) => new(error);
-
         /// <summary>
         /// Deconstruct struct to success value and error value
         /// </summary>

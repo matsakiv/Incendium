@@ -19,7 +19,7 @@
     <Title>Incendium.Result</Title>
     <Authors>mativ</Authors>
     <Description>Provides a Result&lt;T&gt; type that allows a method to return both a value and an error in Rust style without exceptions</Description>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Copyright>Copyright © Igor Matsak</Copyright>
   </PropertyGroup>
 

@@ -43,8 +43,8 @@ if (error != null) {
     log.LogError(
         error.Exception(),
         "Error with code {@code} and message {@message}",
-        error.Code(),
-        error.Message());
+        error.Code,
+        error.Message);
 }
 ```
 
@@ -53,12 +53,15 @@ The `Result<T>` instance can be created only from non-null value or from non-nul
 ```cs
 public Result<Foo> GetFooAsync() {
     return new Foo(); // correct
-    return new Error(); // correct
-    return (Foo)null; // incorrect, CS8600 warning, throws ArgumentNullException
-    return (Foo)null!; // incorrect, throws ArgumentNullException
-    return (Foo?)null; // incorrect, CS8604 warning, throws ArgumentNullException
-    return (Foo?)null!; // incorrect, throws ArgumentNullException
-    return (Error?)null; // incorrect, throws ArgumentNullException
+    // return new Error(); // correct
+    // return (Foo)null; // incorrect, CS8600 and CS8625 warnings, throws ArgumentNullException
+    // return (Foo)null!; // incorrect, throws ArgumentNullException
+    // return (Foo?)null; // incorrect, CS8625 warning, throws ArgumentNullException
+    // return (Foo?)null!; // incorrect, throws ArgumentNullException
+    // return (Error)null; // incorrect, CS8600 and CS8625 warnings, throws ArgumentNullException
+    // return (Error)null!; // incorrect, throws ArgumentNullException
+    // return (Error?)null; // incorrect, CS8625 warning, throws ArgumentNullException
+    // return (Error?)null!; // incorrect, throws ArgumentNullException
 }
 ```
 
@@ -67,12 +70,15 @@ public Result<Foo> GetFooAsync() {
 If the successful return value can be null, you must use the `NullableResult<T>` type:
 
 ```cs
-public async NullableResult<Foo> GetFooAsync() {
+public NullableResult<Foo> GetFooAsync() {
     return new Foo(); // correct
-    return new Error(); // correct
-    return (Foo?)null; // correct
-    return (Foo)null; // correct with CS8600 warning
-    return (Foo)null!; // correct
-    return (Error?)null; // incorrect, throws ArgumentNullException
+    // return new Error(); // correct
+    // return (Foo?)null; // correct
+    // return (Foo)null; // correct with CS8600 warning
+    // return (Foo)null!; // correct
+    // return (Error)null; // incorrect, CS8600 and CS8625 warnings, throws ArgumentNullException
+    // return (Error)null!; // incorrect, throws ArgumentNullException
+    // return (Error?)null; // incorrect, CS8625 warning, throws ArgumentNullException
+    // return (Error?)null!; // incorrect, throws ArgumentNullException
 }
 ```

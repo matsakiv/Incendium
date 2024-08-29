@@ -1,5 +1,3 @@
-using Incendium.Extensions;
-
 namespace Incendium.Result
 {
     public class ResultsTests
@@ -27,12 +25,12 @@ namespace Incendium.Result
             // asserts
             Assert.Throws<ArgumentNullException>(() =>
             {
-                var result = new Result<TestObject>((Error?)null);
+                var result = new Result<TestObject>((Error)null!);
             });
 
             Assert.Throws<ArgumentNullException>(() =>
             {
-                Result<TestObject> result = (Error?)null;
+                Result<TestObject> result = (Error)null!;
             });
         }
 
@@ -58,10 +56,8 @@ namespace Incendium.Result
             // asserts
             Assert.Null(result);
             Assert.NotNull(error);
-            Assert.Equal(100, error.Value.Code);
-            Assert.Equal("Error", error.Value.Message);
-            Assert.Equal(100, error.Code());
-            Assert.Equal("Error", error.Message());
+            Assert.Equal(100, error.Code);
+            Assert.Equal("Error", error.Message);
         }
 
         [Fact]
@@ -84,12 +80,12 @@ namespace Incendium.Result
             // asserts
             Assert.Throws<ArgumentNullException>(() =>
             {
-                var result = new NullableResult<TestObject>((Error?)null);
+                var result = new NullableResult<TestObject>((Error)null!);
             });
 
             Assert.Throws<ArgumentNullException>(() =>
             {
-                NullableResult<TestObject> result = (Error?)null;
+                NullableResult<TestObject> result = (Error)null!;
             });
         }
 
@@ -115,10 +111,8 @@ namespace Incendium.Result
             // asserts
             Assert.Null(result);
             Assert.NotNull(error);
-            Assert.Equal(100, error.Value.Code);
-            Assert.Equal("Error", error.Value.Message);
-            Assert.Equal(100, error.Code());
-            Assert.Equal("Error", error.Message());
+            Assert.Equal(100, error.Code);
+            Assert.Equal("Error", error.Message);
         }
 
         private static Result<TestObject> GetResult(bool withError)
