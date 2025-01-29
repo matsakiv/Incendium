@@ -1,50 +1,86 @@
 # Incendium.RetryPolicy
 [![License: MIT](https://img.shields.io/github/license/matsakiv/incendium)](https://opensource.org/licenses/MIT) ![NuGet Version](https://img.shields.io/nuget/v/Incendium.RetryPolicy) ![NuGet Downloads](https://img.shields.io/nuget/dt/Incendium.RetryPolicy)
 
-Incendium.RetryPolicy is a small .NET standard 2.1 library that provides a `RetryHttpClientHandler` type to easily retry HTTP requests in case of errors, as well as a `RateGate` to manage rate limiting.
+Incendium.RetryPolicy is a lightweight .NET standard 2.1 library that provides robust HTTP request retry functionality and rate limiting capabilities through two main components:
+- `RetryHttpClientHandler`: Handles automatic retry of failed HTTP requests
+- `RateGate`: Manages rate limiting for your API calls
 
-## Getting started
+## Installation
 
-### Installation
+Using Package Manager:
+```
+PM> Install-Package Incendium.RetryPolicy
+```
 
-`PM> Install-Package Incendium.RetryPolicy`
+Using .NET CLI:
+```
+dotnet add package Incendium.RetryPolicy
+```
+
+## Usage
 
 ### RetryHttpClientHandler
 
-Сan be used as a handler for `HttpClient` and allows you to easily set up repeated requests with constant or exponential delays in the following cases:
-* `HttpNetworkException`
-* Server errors (`5xx`)
-* Request timeout error (`408`)
-* Too many requests (`429`)
+The handler automatically retries requests in the following scenarios:
+- Network exceptions (`HttpRequestException`)
+- Server errors (5xx status codes)
+- Request timeout (408)
+- Rate limit exceeded (429)
 
-and also allows you to configure rate limiting using `RateGate`:
-
+Basic setup:
 ```cs
-var innerHttpClientHandler = new HttpClientHandler(); // can be easily mocked
-var retryHttpClientHandler = new RetryHttpClientHandler(innerHttpClientHandler)
+var handler = new RetryHttpClientHandler(new HttpClientHandler())
 {
     RetryCount = 5, // sets 5 retry attempts
     RetryOnHttpRequestException = true, // sets the retry flag in case of an HttpRequestException
     FirstRetryDelay = TimeSpan.FromMilliseconds(100), // sets the median starting delay between requests
-    RateGate = new RateGate(
-        occurrences: 10, // sets rate limit to 10 request per 60 seconds
-        timeUnit: TimeSpan.FromSeconds(60))
 }
-var httpClient = new HttpClient(retryHttpClientHandler);
+var client = new HttpClient(handler);
 ```
 
-There are several ready-made delay algorithms that can be used:
-* Constant
-* Exponential
-* DecorrelatedJitterBackoffV2 (default)
+### Rate Limiting
 
+Integrate rate limiting using `RateGate`:
 ```cs
-var retryHttpClientHandler = new RetryHttpClientHandler(innerHttpClientHandler)
+var handler = new RetryHttpClientHandler(new HttpClientHandler())
 {
-    RetryDelaysFactory = () => Delays.Exponential(
-        firstDelay: TimeSpan.FromMilliseconds(100),
-        count: 10)
-}
+    RateGate = new RateGate(
+        occurrences: 10,    // Maximum requests
+        timeUnit: TimeSpan.FromSeconds(60)    // Time window
+    )
+};
 ```
 
-You can also pass your own delay algorithm in the `RetryDelaysFactory` property, which should return `IEnumerable<TimeSpan>`.
+### Retry Delay Strategies
+
+The library provides three built-in delay strategies:
+
+1. **Constant Delay**
+```csharp
+handler.RetryDelaysFactory = () => Delays.Constant(
+    delay: TimeSpan.FromSeconds(1),
+    count: 5
+);
+```
+
+2. **Exponential Backoff**
+```csharp
+handler.RetryDelaysFactory = () => Delays.Exponential(
+    firstDelay: TimeSpan.FromMilliseconds(100),
+    count: 5
+);
+```
+
+3. **DecorrelatedJitterBackoffV2** (Default)
+```csharp
+handler.RetryDelaysFactory = () => Delays.DecorrelatedJitterBackoffV2(
+    firstDelay: TimeSpan.FromMilliseconds(100),
+    count: 5
+);
+```
+
+You can also implement custom delay strategies by providing your own `IEnumerable<TimeSpan>` through the `RetryDelaysFactory` property.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

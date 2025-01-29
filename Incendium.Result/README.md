@@ -1,11 +1,11 @@
 # Incendium.Result
 [![License: MIT](https://img.shields.io/github/license/matsakiv/incendium)](https://opensource.org/licenses/MIT) ![NuGet Version](https://img.shields.io/nuget/v/Incendium.Result) ![NuGet Downloads](https://img.shields.io/nuget/dt/Incendium.Result)
 
-Incendium.Result is a small .NET Standard 2.1 library, which provides `Error`, `Result<T>` and `NullableResult<T>` useful types.
+Incendium.Result is a lightweight .NET Standard 2.1 library, which provides `Error`, `Result<T>` and `NullableResult<T>` useful types.
 
 These types allow you to return success value or error from asynchronous and synchronous methods without explicit indication of the result type when returning and with convenient type deconstruction during processing the result.
 
-These type also can be used for less error handling through exception mechanisms where possible.
+These types also can be used for less error handling through exception mechanisms where possible.
 
 ## Getting started
 
@@ -18,7 +18,7 @@ These type also can be used for less error handling through exception mechanisms
 If you need to return either a not-null value or an error from a method, you can use the `Result<T>` type:
 
 ```cs
-public async Result<string> GetStringAsync() {
+public Result<string> GetString() {
     // ...
     if (condition1) {
         return "Test string result";
@@ -37,7 +37,8 @@ public async Result<string> GetStringAsync() {
 Then processing the result might look like this:
 
 ```cs
-var (str, error) = await GetStringAsync();
+// Using deconstruction
+var (str, error) = GetString();
 
 if (error != null) {
     log.LogError(
@@ -46,39 +47,88 @@ if (error != null) {
         error.Code,
         error.Message);
 }
+
+// Using functional methods
+var result = GetString()
+    .Tap(str => logger.Log($"Retrieved string {str}"))
+    .Map(str => str.ToUpper())
+    .Bind(str => ValidateString(str))
+    .Match(
+        str => $"Success: {str}",
+        error => $"Failed: {error.Message}"
+    );
+
+// Using TryGetValue
+if (GetString().TryGetValue(out var value))
+{
+    Console.WriteLine($"Got value: {value}");
+}
 ```
 
 The `Result<T>` instance can be created only from non-null value or from non-null error:
 
 ```cs
-public Result<Foo> GetFooAsync() {
+public Result<Foo> GetFoo() {
     return new Foo(); // correct
-    // return new Error(); // correct
-    // return (Foo)null; // incorrect, CS8600 and CS8625 warnings, throws ArgumentNullException
-    // return (Foo)null!; // incorrect, throws ArgumentNullException
-    // return (Foo?)null; // incorrect, CS8625 warning, throws ArgumentNullException
-    // return (Foo?)null!; // incorrect, throws ArgumentNullException
-    // return (Error)null; // incorrect, CS8600 and CS8625 warnings, throws ArgumentNullException
-    // return (Error)null!; // incorrect, throws ArgumentNullException
-    // return (Error?)null; // incorrect, CS8625 warning, throws ArgumentNullException
-    // return (Error?)null!; // incorrect, throws ArgumentNullException
+    return new Error(); // correct
+    return Result<Foo>.Success(new Foo()); // correct
+    return Result<Foo>.Failure(new Error()); // correct
+    return (Foo)null; // incorrect, CS8600 and CS8625 warnings, throws ArgumentNullException
+    return (Foo)null!; // incorrect, throws ArgumentNullException
+    return (Foo?)null; // incorrect, CS8625 warning, throws ArgumentNullException
+    return (Foo?)null!; // incorrect, throws ArgumentNullException
+    return (Error)null; // incorrect, CS8600 and CS8625 warnings, throws ArgumentNullException
+    return (Error)null!; // incorrect, throws ArgumentNullException
+    return (Error?)null; // incorrect, CS8625 warning, throws ArgumentNullException
+    return (Error?)null!; // incorrect, throws ArgumentNullException
 }
 ```
 
-##  NullableResult`<T>`
+### NullableResult`<T>`
 
 If the successful return value can be null, you must use the `NullableResult<T>` type:
 
 ```cs
-public NullableResult<Foo> GetFooAsync() {
+public NullableResult<Foo> GetFoo() {
     return new Foo(); // correct
-    // return new Error(); // correct
-    // return (Foo?)null; // correct
-    // return (Foo)null; // correct with CS8600 warning
-    // return (Foo)null!; // correct
-    // return (Error)null; // incorrect, CS8600 and CS8625 warnings, throws ArgumentNullException
-    // return (Error)null!; // incorrect, throws ArgumentNullException
-    // return (Error?)null; // incorrect, CS8625 warning, throws ArgumentNullException
-    // return (Error?)null!; // incorrect, throws ArgumentNullException
+    return new Error(); // correct
+    return NullableResult<Foo>.Success(new Foo()); // correct
+    return NullableResult<Foo>.Success(null); // correct
+    return NullableResult<Foo>.Failure(new Error()); // correct
+    return (Foo?)null; // correct
+    return (Foo)null; // correct with CS8600 warning
+    return (Foo)null!; // correct
+    return (Error)null; // incorrect, CS8600 and CS8625 warnings, throws ArgumentNullException
+    return (Error)null!; // incorrect, throws ArgumentNullException
+    return (Error?)null; // incorrect, CS8625 warning, throws ArgumentNullException
+    return (Error?)null!; // incorrect, throws ArgumentNullException
 }
 ```
+
+### Functional Methods
+
+Both `Result<T>` and `NullableResult<T>` support functional programming patterns through the following methods:
+
+- `Map<TResult>(Func<T, TResult> mapper)` - Transform the success value
+- `Bind<TResult>(Func<T, Result<TResult>> binder)` - Chain operations that return Result
+- `Match<TResult>(Func<T, TResult> onSuccess, Func<Error, TResult> onError)` - Handle both success and error cases
+- `Match(Action<T> onSuccess, Action<Error> onError)` - Execute actions for success or error
+- `TryGetValue(out T value)` - Attempt to get the success value
+- `Tap(Action<T> action)` - Execute an action on success without changing the result
+
+Example of chaining operations:
+
+```cs
+var result = GetUser(123)
+    .Tap(user => logger.LogInfo($"Retrieved user {user.Id}"))
+    .Map(user => user.Email)
+    .Bind(email => ValidateEmail(email))
+    .Match(
+        email => $"Email is valid: {email}",
+        error => $"Validation failed: {error.Message}"
+    );
+```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

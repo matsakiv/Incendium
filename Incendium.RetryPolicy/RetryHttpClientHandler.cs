@@ -9,8 +9,16 @@ using System.Threading.Tasks;
 namespace Incendium.RetryPolicy
 {
     /// <summary>
-    /// Represents HTTP client handler which allows you to resend requests in case of errors and control the number of requests sent per unit of time
+    /// Represents HTTP client handler which allows you to resend requests in case of errors
+    /// and control the number of requests sent per unit of time.
     /// </summary>
+    /// <remarks>
+    /// The handler will retry requests in the following cases:
+    /// - Server errors (5xx status codes)
+    /// - Request timeout (408)
+    /// - Too many requests (429)
+    /// - HttpRequestException (if RetryOnHttpRequestException is enabled)
+    /// </remarks>
     /// <param name="httpMessageHandler">Inner HTTP message handler used to send requests</param>
     public class RetryHttpClientHandler(HttpMessageHandler httpMessageHandler)
         : DelegatingHandler(httpMessageHandler)
@@ -19,23 +27,30 @@ namespace Incendium.RetryPolicy
         private IRateGate? _rateGate;
 
         /// <summary>
-        /// Retry count
+        /// Gets the number of retry attempts for failed requests.
         /// </summary>
         public int RetryCount { get; init; }
+
         /// <summary>
-        /// Flag indicating whether the request should be resent in case of an HttpRequestException error
+        /// Gets a value indicating whether the request should be retried in case of an HttpRequestException.
         /// </summary>
         public bool RetryOnHttpRequestException { get; init; }
+
         /// <summary>
-        /// Delay for first retry attempt
+        /// Gets the initial delay before the first retry attempt.
+        /// This value is used as a base for calculating subsequent delays.
         /// </summary>
         public TimeSpan FirstRetryDelay { get; init; }
+
         /// <summary>
-        /// An object that controls the number of requests per unit of time. If equal to null, no control is performed
+        /// Gets or initializes the rate limiting mechanism.
+        /// When set, controls the number of requests that can be sent within a specified time period.
         /// </summary>
         public IRateGate? RateGate { get => _rateGate; init => _rateGate = value; }
+
         /// <summary>
-        /// A custom factory used to get a set of delays. By default Delays.DecorrelatedJitterBackoffV2 is used
+        /// Gets a custom factory for generating retry delays.
+        /// If not set, uses Delays.DecorrelatedJitterBackoffV2 strategy.
         /// </summary>
         public Func<IEnumerable<TimeSpan>>? RetryDelaysFactory { get; init; }
 

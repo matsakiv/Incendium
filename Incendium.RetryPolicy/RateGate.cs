@@ -7,7 +7,7 @@ using Incendium.RetryPolicy.Abstract;
 namespace Incendium.RetryPolicy
 {
     /// <summary>
-    /// Represents a class that controls the number of requests in a given time unit
+    /// Represents a thread-safe rate limiting mechanism that controls the number of requests within a specified time window.
     /// </summary>
     public class RateGate : IDisposable, IRateGate
     {
@@ -77,10 +77,17 @@ namespace Incendium.RetryPolicy
             }
         }
 
-        /// <inheritdoc/>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        /// <exception cref="ObjectDisposedException"></exception>
-        /// <exception cref="OperationCanceledException"></exception>
+        /// <summary>
+        /// Asynchronously waits until a request can proceed based on the rate limits.
+        /// </summary>
+        /// <param name="millisecondsTimeout">The number of milliseconds to wait, or -1 to wait indefinitely.</param>
+        /// <param name="cancellationToken">The cancellation token to observe.</param>
+        /// <returns>
+        /// True if the request can proceed; false if the timeout occurred before the request could proceed.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when millisecondsTimeout is less than -1.</exception>
+        /// <exception cref="ObjectDisposedException">Thrown when the RateGate has been disposed.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation is canceled through the cancellationToken.</exception>
         public async Task<bool> WaitToProceedAsync(
             int millisecondsTimeout,
             CancellationToken cancellationToken = default)
@@ -127,12 +134,10 @@ namespace Incendium.RetryPolicy
                 throw new ObjectDisposedException("RateGate is already disposed");
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
+        /// <summary>
+        /// Releases all resources used by the RateGate instance.
+        /// </summary>
+        /// <param name="isDisposing">True if called from Dispose(), false if called from finalizer.</param>
         protected virtual void Dispose(bool isDisposing)
         {
             if (!_isDisposed)
@@ -145,6 +150,12 @@ namespace Incendium.RetryPolicy
                     _isDisposed = true;
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -18,7 +18,7 @@
     <Title>Incendium.RetryPolicy</Title>
     <Authors>mativ</Authors>
     <Description>Provides classes for easily managing requests rate limits and retrying after errors</Description>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Copyright>Copyright © Igor Matsak</Copyright>
   </PropertyGroup>
 

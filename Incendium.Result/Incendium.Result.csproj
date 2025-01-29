@@ -18,8 +18,8 @@
 
     <Title>Incendium.Result</Title>
     <Authors>mativ</Authors>
-    <Description>Provides a Result&lt;T&gt; type that allows a method to return both a value and an error in Rust style without exceptions</Description>
-    <Version>1.0.4</Version>
+    <Description>Provides Result types (`Result&lt;T&gt;` and `NullableResult&lt;T&gt;`) for elegant error handling without exceptions. These types allow methods to return either a success value or an error object, enabling a more functional approach to error handling and better control flow.</Description>
+    <Version>1.0.5</Version>
     <Copyright>Copyright © Igor Matsak</Copyright>
   </PropertyGroup>
 

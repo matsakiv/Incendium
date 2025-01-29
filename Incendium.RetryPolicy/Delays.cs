@@ -9,11 +9,14 @@ namespace Incendium.RetryPolicy
         /// <summary>
         /// Gets a set of constant delays which are equal to <paramref name="delay"/>
         /// </summary>
-        /// <remarks>For example, calling with count equal to 3 will create an enumeration like [delay, delay, delay]</remarks>
-        /// <param name="delay">Delay</param>
-        /// <param name="count">Number of delays</param>
-        /// <returns>Enumeration containing delays</returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <remarks>
+        /// For example, calling with count equal to 3 will create an enumeration: [delay, delay, delay].
+        /// If count is 0, returns an empty enumeration.
+        /// </remarks>
+        /// <param name="delay">The time interval between retries</param>
+        /// <param name="count">Number of delays to generate</param>
+        /// <returns>An enumeration containing constant delays</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when delay is negative or count is negative</exception>
         public static IEnumerable<TimeSpan> Constant(TimeSpan delay, int count)
         {
             if (delay < TimeSpan.Zero)
@@ -32,12 +35,15 @@ namespace Incendium.RetryPolicy
         /// <summary>
         /// Gets a set of exponential delays starting with <paramref name="firstDelay"/> and multiplying them by a <paramref name="factor"/> 
         /// </summary>
-        /// <remarks>For example, calling with count equal to 3 and factor 2 will create an enumeration like [firstDelay, firstDelay*2, firstDelay*4]</remarks>
-        /// <param name="firstDelay">First delay</param>
-        /// <param name="count">Number of delays</param>
-        /// <param name="factor">Factor, default is 2</param>
-        /// <returns>Enumeration containing delays</returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <remarks>
+        /// For example, calling with count equal to 3 and factor 2 will create an enumeration: [firstDelay, firstDelay*2, firstDelay*4].
+        /// If count is 0, returns an empty enumeration.
+        /// </remarks>
+        /// <param name="firstDelay">The initial time interval</param>
+        /// <param name="count">Number of delays to generate</param>
+        /// <param name="factor">Multiplication factor for each subsequent delay (must be greater than 0)</param>
+        /// <returns>An enumeration containing exponentially increasing delays</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when firstDelay is negative, count is negative, or factor is less than or equal to 0</exception>
         public static IEnumerable<TimeSpan> Exponential(TimeSpan firstDelay, int count, double factor = 2)
         {
             if (firstDelay < TimeSpan.Zero)
@@ -61,14 +67,19 @@ namespace Incendium.RetryPolicy
         }
 
         /// <summary>
-        /// Gets a set of exponential delays with randomized deviation (jitter) to prevent peak loads
+        /// Gets a set of exponential delays with randomized deviation (jitter) to prevent peak loads using the Decorrelated Jitter algorithm
         /// </summary>
-        /// <param name="medianFirstDelay">Median first delay</param>
-        /// <param name="count">Number of delays</param>
-        /// <param name="seed">Seed for additional jitter randomization</param>
-        /// <param name="fastFirst">Flag indicating whether the first delay should be set to zero (fast)</param>
-        /// <returns>Enumeration containing delays</returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <remarks>
+        /// This implementation uses a modified version of the Decorrelated Jitter backoff algorithm to generate delays.
+        /// The algorithm adds randomization to prevent thundering herd problems in distributed systems.
+        /// If count is 0, returns an empty array.
+        /// </remarks>
+        /// <param name="medianFirstDelay">The median value for the first delay</param>
+        /// <param name="count">Number of delays to generate</param>
+        /// <param name="seed">Optional seed value for the random number generator to produce deterministic sequences</param>
+        /// <param name="fastFirst">When true, the first retry will be immediate (zero delay)</param>
+        /// <returns>An enumeration containing randomized exponential delays with jitter</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when medianFirstDelay is negative or count is negative</exception>
         public static IEnumerable<TimeSpan> DecorrelatedJitterBackoffV2(
             TimeSpan medianFirstDelay,
             int count,
