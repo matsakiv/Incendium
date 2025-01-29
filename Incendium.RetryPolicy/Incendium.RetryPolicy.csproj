@@ -17,8 +17,8 @@
 
     <Title>Incendium.RetryPolicy</Title>
     <Authors>mativ</Authors>
-    <Description>Provides classes for easily managing requests rate limits and retrying after errors</Description>
-    <Version>1.0.3</Version>
+    <Description>Provides a flexible retry policy system for handling rate limits and transient errors. Easily configure automatic retries with customizable delays, backoff strategies, and error handling for more resilient applications.</Description>
+    <Version>1.0.4</Version>
     <Copyright>Copyright © Igor Matsak</Copyright>
   </PropertyGroup>
 
